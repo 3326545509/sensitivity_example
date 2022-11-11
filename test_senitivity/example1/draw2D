@@ -1,0 +1,100 @@
+#!/home/y_piao/bin/Python-3.6.8/python
+import os
+import numpy as np
+from matplotlib import pyplot as plt
+
+def read(path):
+    with open(path,'r')as f:
+        row=f.readlines()
+
+    data=[]
+    for i in range(2,len(row)):
+        temp=row[i]
+        temp=np.array(temp.split()).astype(float)
+        data.append(temp)
+    return data
+
+def draw(data,outname,xlabel,ylabel,title,cmap,formula):
+    x=[]
+    y=[]
+    z=[]
+    for i in range(len(data)):
+        x.append(data[i][0])
+        y.append(data[i][1])
+        z.append(data[i][2])
+    x=np.array(x)
+    y=np.array(y)
+    z=np.array(z)
+    if formula!=0:
+        z=eval(formula)
+    #plt.style.use(['science'])
+    plt.figure(dpi=400)
+    if xlabel != 0:
+        plt.xlabel(xlabel)
+    if ylabel != 0:
+        plt.ylabel(ylabel)
+    if title  != 0:
+        plt.title(title)
+    
+    print('min, max=',min(z),max(z))
+    if cmap == 'dc':
+        zmax=max(abs(max(z)),abs(min(z)))
+        zmin=-zmax
+        print(zmin,zmax)
+        plt.scatter(x,y,c=z,s=0.1,cmap='seismic_r',vmin=zmin,vmax=zmax)
+    elif cmap == 0:
+        plt.scatter(x,y,c=z,s=0.1,cmap='seismic_r')
+    else:
+        temp=cmap[1:-1].split(',')
+        zmin=float(temp[0])
+        zmax=float(temp[1])
+        plt.scatter(x,y,c=z,cmap='seismic_r',vmin=zmin,vmax=zmax)
+    plt.axis('scaled')
+    plt.colorbar()
+    plt.savefig(outname+'.png')
+
+def osargv():
+    data=0
+    outname='out'
+    xlabel=0
+    ylabel=0
+    title=0
+    formula=0
+    cmap=0
+    
+    if len(os.sys.argv)<2:
+        exit("Please input filename")
+    #print('!! the fist line of file inputed is ignored.')
+    data=read(os.sys.argv[1])
+    if (len(os.sys.argv)==2):
+        return data,outname,xlabel,ylabel,title,cmap,formula
+    
+    i=2
+    while (i<=len(os.sys.argv)-2):
+        temp=os.sys.argv[i]
+        if temp=="-o":
+            outname =   os.sys.argv[i+1]
+        elif temp=='-x':
+            xlabel  =   os.sys.argv[i+1]
+        elif temp=='-y':
+            ylabel  =   os.sys.argv[i+1]
+        elif temp=='-t':
+            title   =   os.sys.argv[i+1]
+        elif temp=='-c':
+            cmap=   os.sys.argv[i+1]
+        elif temp=='-f':
+            formula =   os.sys.argv[i+1]
+        else:
+            print("Error "+temp+". The number you hace dailed does't exist, please check it and dail it again ")
+        i=i+2
+
+    # if (len(os.sys.argv)==3):
+    #     outname=os.sys.argv[2]
+    # else:
+    #     outname='out'
+	# #for i in os.sys.argv[2:]:
+    print(outname,xlabel,ylabel,title,cmap,formula)
+    return data,outname,xlabel,ylabel,title,cmap,formula
+		
+data,outname,xlabel,ylabel,title,cmap,formula  =   osargv()
+draw(data,outname,xlabel,ylabel,title,cmap,formula)
